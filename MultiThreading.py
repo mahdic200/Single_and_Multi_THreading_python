@@ -28,15 +28,16 @@ class MultiThreading:
         return self.__logs
 
     def __downloadImage(self, url):
-        try:
+        # try:
             response = requests.get(url)
             response.raise_for_status()
             if response.status_code != 204:
                 path = MultiThreading.standardPath(self.__downloadedImagesFolder, self.__getImageName(url))
                 with open(path, "wb+") as f:
                     f.write(response.content)
-        except Exception as error:
-            self.__logs.append({"message":error, "url":url})
+        # except Exception as e:
+        #     # self.__logs.append({"message":e, "url":url})
+        #     raise Exception(e)
 
     def __getImageName(self, url):
         return url.split("/")[-1]
@@ -52,11 +53,18 @@ class MultiThreading:
         self.__initUrls()
         i = 0
         for url in self.__urls:
-            temp = Thread(target=self.__downloadImage, args=[url])
-            self.__threads.append(temp)
-            self.__threads[i].start()
-            self.__threads[i].join()
-            i += 1
+            try:
+                temp = Thread(target=self.__downloadImage, args=[url])
+                self.__threads.append(temp)
+                self.__threads[i].start()
+                i += 1
+            except Exception as e:
+                print('there is a problem with url !')
+                continue
+            
+        
+        for thread in self.__threads:
+            thread.join()
 
     def fire(self):
         self.__startTime = timeit.default_timer()
